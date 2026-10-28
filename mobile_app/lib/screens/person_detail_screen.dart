@@ -5,6 +5,9 @@ import '../services/api_service.dart';
 import '../widgets/person_avatar.dart';
 import 'person_form_screen.dart';
 
+/// 2. Kişi Detay Sayfası (ID Bazlı Veri & Aksiyon):
+/// Seçilen kişinin benzersiz ID'si ile GET /api/persons/{id} ucundan detayları çeker,
+/// iletişim niyetlerini (tel/mailto) tetikler ve en altta sabit Düzenle/Sil butonlarını sunar.
 class PersonDetailScreen extends StatefulWidget {
   final int personId;
 
@@ -26,12 +29,14 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     _loadPerson();
   }
 
+  /// ID bazlı kişi detaylarını sunucudan çeker (GET /api/persons/{id}).
   void _loadPerson() {
     setState(() {
       _personFuture = _apiService.getPersonById(widget.personId);
     });
   }
 
+  /// E-posta satırına tıklandığında sistemin posta gönderme niyetini (mailto:) tetikler.
   Future<void> _launchEmail(String email) async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
@@ -45,6 +50,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  /// Telefon satırına tıklandığında sistemin arama niyetini (tel:) tetikler.
   Future<void> _launchPhone(String phone) async {
     final cleanedPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
     final Uri phoneUri = Uri(
@@ -59,6 +65,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  /// Düzenle butonuna tıklandığında mevcut kişi bilgileriyle güncelleme ekranını açar.
   Future<void> _openEditScreen(Person person) async {
     final updated = await Navigator.push<Person>(
       context,
@@ -76,23 +83,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  /// Sil butonuna tıklandığında kullanıcıdan onay diyaloğu alır ve DELETE /api/persons/{id} isteği yollar.
   Future<void> _confirmAndDelete(Person person) async {
     final colorScheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: colorScheme.errorContainer,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.delete_outline_rounded,
-            color: colorScheme.error,
-            size: 28,
-          ),
+        icon: Icon(
+          Icons.delete_outline_rounded,
+          color: colorScheme.error,
+          size: 36,
         ),
         title: const Text('Kişiyi Sil'),
         content: Text(
@@ -110,6 +110,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
+                // Silme onayı uyarısının aksiyon butonu (Canlı müdahalede backgroundColor değiştirilebilir)
                 child: FilledButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: FilledButton.styleFrom(
@@ -134,6 +135,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     try {
       await _apiService.deletePerson(person.id!);
       if (!mounted) return;
+      // Silme başarılı olduğunda listeye geri döner ve listenin yenilenmesini tetikler
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
@@ -155,6 +157,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    // Geri tuşuna basıldığında güncelleme yapıldıysa ana listenin yenilenmesi için _hasChanges döndürülür
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -177,6 +180,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               ),
             ),
             body: _buildBody(colorScheme, textTheme, snapshot),
+            // En Altta Sabit Aksiyon Butonları: DÜZENLE ve KİŞİYİ SİL (Şekil 1 Wireframe uyumlu)
             bottomNavigationBar: person == null
                 ? null
                 : SafeArea(
@@ -205,8 +209,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                                     ? null
                                     : () => _confirmAndDelete(person),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: colorScheme.errorContainer,
-                                  foregroundColor: colorScheme.onErrorContainer,
+                                  backgroundColor: colorScheme.error,
+                                  foregroundColor: colorScheme.onError,
                                 ),
                                 icon: _isDeleting
                                     ? SizedBox(
@@ -214,7 +218,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                                         height: 18,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: colorScheme.onErrorContainer,
+                                          color: colorScheme.onError,
                                         ),
                                       )
                                     : const Icon(
@@ -286,6 +290,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Üst Panel: Büyük profil fotoğrafı, merkezde Ad-Soyad ve Departman unvanı
           Card(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -303,7 +308,9 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   Text(
                     person.fullName,
                     textAlign: TextAlign.center,
-                    style: textTheme.headlineSmall,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -320,6 +327,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       textAlign: TextAlign.center,
                       style: textTheme.titleSmall?.copyWith(
                         color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -328,6 +336,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
             ),
           ),
           const SizedBox(height: 12),
+          // Alt Panel: Doğum Yeri, Doğum Tarihi, E-Posta (tıklanabilir) ve Telefon (tıklanabilir)
           Card(
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -341,7 +350,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 ),
                 Divider(
                   height: 1,
-                  thickness: 1,
                   indent: 72,
                   endIndent: 16,
                   color: colorScheme.outlineVariant,
@@ -355,7 +363,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 ),
                 Divider(
                   height: 1,
-                  thickness: 1,
                   indent: 72,
                   endIndent: 16,
                   color: colorScheme.outlineVariant,
@@ -370,7 +377,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 ),
                 Divider(
                   height: 1,
-                  thickness: 1,
                   indent: 72,
                   endIndent: 16,
                   color: colorScheme.outlineVariant,
@@ -413,8 +419,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               decoration: BoxDecoration(
                 color: isAction
                     ? colorScheme.primaryContainer
-                    : colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(13),
+                    : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
@@ -432,12 +438,15 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 children: [
                   Text(
                     label,
-                    style: textTheme.labelMedium,
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     value,
                     style: textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                       color: isAction
                           ? colorScheme.primary
                           : colorScheme.onSurface,
@@ -448,18 +457,10 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
             ),
             if (isAction) ...[
               const SizedBox(width: 12),
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.arrow_outward_rounded,
-                  size: 16,
-                  color: colorScheme.primary,
-                ),
+              Icon(
+                Icons.arrow_outward_rounded,
+                size: 18,
+                color: colorScheme.primary,
               ),
             ],
           ],

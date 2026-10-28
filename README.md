@@ -136,8 +136,9 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
 - **Masaüstü / iOS Simülatör / Web:** Otomatik olarak `http://127.0.0.1:8000/api/persons` adresini kullanır.
 - **Fiziksel Cihaz:** Uygulama üst çubuğundaki (AppBar) ağ ayarları ikonuna tıklayarak bilgisayarınızın yerel IP adresini (örn. `http://192.168.1.50:8000/api/persons`) çalışma zamanında girebilirsiniz.
 
-### Çalıştırılabilir APK Derleme Komutu
-Android test paketi (`.apk`) üretmek için:
+### Çalıştırılabilir APK Test Paketi ve Derleme Komutu
+- **Hazır Derlenmiş APK Dosyası:** [`mobile_app/release/kisi_yonetim_sistemi.apk`](mobile_app/release/kisi_yonetim_sistemi.apk) (Doğrudan Android cihaza yüklenebilir).
+- Yeniden derlemek için:
 ```bash
 cd mobile_app
 flutter build apk --release --split-per-abi

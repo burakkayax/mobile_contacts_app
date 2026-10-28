@@ -1,3 +1,4 @@
+/// Sunucudan (REST API) gelen JSON verilerini yerel Dart nesnesine bağlayan model sınıfı.
 class Person {
   final int? id;
   final String fullName;
@@ -19,6 +20,7 @@ class Person {
     required this.phone,
   });
 
+  /// API'den gelen JSON haritasını (Map) Person nesnesine dönüştürür (Deserialization).
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
       id: json['id'] as int?,
@@ -32,6 +34,7 @@ class Person {
     );
   }
 
+  /// Person nesnesini POST ve PUT isteklerinde gönderilecek JSON haritasına dönüştürür (Serialization).
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
@@ -45,6 +48,7 @@ class Person {
     };
   }
 
+  /// YYYY-MM-DD formatındaki tarihi ekranda GG.AA.YYYY (Örn: 12.04.1994) olarak gösterir.
   String get formattedBirthDate {
     final parts = birthDate.split('-');
     if (parts.length == 3) {

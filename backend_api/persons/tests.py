@@ -9,6 +9,7 @@ class PersonAPITests(TestCase):
         self.client = APIClient()
 
     def test_get_persons_list(self):
+        """GET /api/persons tüm kişileri yönergedeki JSON şemasıyla dizi olarak dönmelidir."""
         response = self.client.get('/api/persons')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
@@ -27,6 +28,7 @@ class PersonAPITests(TestCase):
         self.assertEqual(set(first.keys()), expected_keys)
 
     def test_create_get_update_delete_person(self):
+        """POST, GET/{id}, PUT/{id} ve DELETE/{id} CRUD akışı eksiksiz çalışmalıdır."""
         payload = {
             'fullName': 'Test Kullanıcı',
             'department': 'Ar-Ge',
@@ -58,3 +60,24 @@ class PersonAPITests(TestCase):
         delete_res = self.client.delete(f'/api/persons/{person_id}')
         self.assertEqual(delete_res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Person.objects.filter(pk=person_id).exists())
+
+    def test_auto_photo_url_and_validation_errors(self):
+        """Fotoğraf URL boş gönderildiğinde otomatik üretilmeli, hatalı veride 400/404 dönmelidir."""
+        payload = {
+            'fullName': 'Burak Kaya',
+            'department': 'Mobil Geliştirme',
+            'photoUrl': '',
+            'birthPlace': 'İstanbul',
+            'birthDate': '2000-01-15',
+            'email': 'burak@sirket.com',
+            'phone': '+905550001122',
+        }
+        res = self.client.post('/api/persons', payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertIn('ui-avatars.com', res.data['photoUrl'])
+
+        invalid_res = self.client.post('/api/persons', {'fullName': 'Eksik Kayıt'}, format='json')
+        self.assertEqual(invalid_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        not_found_res = self.client.get('/api/persons/999999')
+        self.assertEqual(not_found_res.status_code, status.HTTP_404_NOT_FOUND)

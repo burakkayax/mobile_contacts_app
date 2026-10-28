@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/person.dart';
+import 'package:mobile_app/screens/person_form_screen.dart';
 
 void main() {
   test('Person.fromJson ve toJson veri şeması doğrulaması', () {
@@ -24,9 +25,26 @@ void main() {
     expect(person.toJson(), sampleJson);
   });
 
-  testWidgets('Ana sayfa başlığı ve FAB butonu görüntülenir', (WidgetTester tester) async {
+  testWidgets('Ana sayfa wireframe başlığı ve FAB (+) butonu görüntülenir',
+      (WidgetTester tester) async {
     await tester.pumpWidget(const PersonManagementApp());
-    expect(find.text('Kişiler'), findsOneWidget);
+    expect(find.text('Rehber / Kişi Listesi'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);
+  });
+
+  testWidgets('Kişi kayıt formu zorunlu alan doğrulaması çalışır',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PersonFormScreen(),
+      ),
+    );
+
+    expect(find.text('Yeni Kişi Kaydı'), findsOneWidget);
+    await tester.tap(find.text('KİŞİYİ KAYDET'));
+    await tester.pump();
+
+    expect(find.text('Ad Soyad zorunludur'), findsOneWidget);
+    expect(find.text('Departman zorunludur'), findsOneWidget);
   });
 }

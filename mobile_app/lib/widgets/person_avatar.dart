@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Kişinin ağ üzerindeki profil fotoğrafını dairesel olarak gösteren bileşen.
+/// Fotoğraf yüklenemezse veya boşsa kişinin ad-soyad baş harflerini gösterir.
 class PersonAvatar extends StatelessWidget {
   final String photoUrl;
   final String fullName;
@@ -14,6 +16,7 @@ class PersonAvatar extends StatelessWidget {
     this.heroTag,
   });
 
+  /// Ad ve soyadın ilk harflerini (Örn: "Ahmet Yılmaz" -> "AY") döndürür.
   String get _initials {
     final parts = fullName.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty || parts.first.isEmpty) return '?';
@@ -33,7 +36,7 @@ class PersonAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         color: colorScheme.primaryContainer,
         border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.12),
+          color: colorScheme.primary.withValues(alpha: 0.15),
           width: 1.5,
         ),
       ),
@@ -70,7 +73,6 @@ class PersonAvatar extends StatelessWidget {
           fontWeight: FontWeight.w700,
           fontSize: radius * 0.64,
           height: 1.0,
-          letterSpacing: -0.3,
         ),
       ),
     );

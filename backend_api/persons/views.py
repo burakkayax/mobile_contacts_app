@@ -7,6 +7,12 @@ from .serializers import PersonSerializer
 
 
 class PersonListCreateAPIView(APIView):
+    """
+    /api/persons uç noktası:
+    - GET: Tüm kişileri JSON dizi (array) formatında listeler.
+    - POST: Yeni kişi kaydı oluşturur.
+    """
+
     def get(self, request):
         persons = Person.objects.all()
         serializer = PersonSerializer(persons, many=True)
@@ -21,6 +27,13 @@ class PersonListCreateAPIView(APIView):
 
 
 class PersonDetailAPIView(APIView):
+    """
+    /api/persons/{id} uç noktası:
+    - GET: Belirtilen ID'ye sahip kişinin tüm detaylarını döner.
+    - PUT / PATCH: Kişinin iletişim ve unvan bilgilerini günceller.
+    - DELETE: İlgili kaydı veritabanından kalıcı olarak siler.
+    """
+
     def get(self, request, pk):
         person = get_object_or_404(Person, pk=pk)
         serializer = PersonSerializer(person)

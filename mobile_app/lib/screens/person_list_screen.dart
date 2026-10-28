@@ -5,6 +5,8 @@ import '../widgets/person_avatar.dart';
 import 'person_detail_screen.dart';
 import 'person_form_screen.dart';
 
+/// 1. Kişi Listesi (Ana Sayfa):
+/// API'deki /api/persons ucundan çekilen verileri ListView içinde listeler.
 class PersonListScreen extends StatefulWidget {
   const PersonListScreen({super.key});
 
@@ -23,7 +25,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
   @override
   void initState() {
     super.initState();
-    _refreshList();
+    _personsFuture = _apiService.getPersons();
   }
 
   @override
@@ -32,6 +34,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
     super.dispose();
   }
 
+  /// Sunucudan kişi listesini yeniden çeker (GET /api/persons).
   Future<void> _refreshList() async {
     final future = _apiService.getPersons();
     setState(() {
@@ -42,6 +45,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
     } catch (_) {}
   }
 
+  /// Sağ alttaki FAB (+) butonuna tıklandığında Yeni Kişi Kayıt ekranını açar.
   Future<void> _openCreateScreen() async {
     final created = await Navigator.push<Person>(
       context,
@@ -58,6 +62,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
     }
   }
 
+  /// Listeden bir satıra tıklandığında seçilen kişinin benzersiz ID'si ile Detay Sayfasını açar.
   Future<void> _openDetailScreen(Person person) async {
     if (person.id == null) return;
     final changed = await Navigator.push<bool>(
@@ -72,6 +77,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
     }
   }
 
+  /// Canlı sunumda veya fiziksel cihazda API sunucu adresini değiştirmeyi sağlayan diyalog.
   Future<void> _showApiUrlDialog() async {
     final controller = TextEditingController(text: ApiService.baseUrl);
     final saved = await showDialog<bool>(
@@ -107,6 +113,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
     }
   }
 
+  /// Arama metni ve seçili departmana göre listeyi filtreler.
   List<Person> _filterPersons(List<Person> persons, String activeDepartment) {
     final query = _searchQuery.trim().toLowerCase();
     return persons.where((person) {
@@ -128,42 +135,28 @@ class _PersonListScreenState extends State<PersonListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kişiler'),
+        // Yönerge Şekil 1 (Wireframe) ile birebir uyumlu ana sayfa başlığı
+        title: const Text('Rehber / Kişi Listesi'),
         actions: [
           IconButton(
             onPressed: _showApiUrlDialog,
             tooltip: 'API Sunucu Adresi',
-            style: IconButton.styleFrom(
-              backgroundColor: colorScheme.surfaceContainerLow,
-              fixedSize: const Size(40, 40),
-            ),
-            icon: Icon(
-              Icons.tune_rounded,
-              size: 20,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            icon: const Icon(Icons.tune_rounded),
           ),
-          const SizedBox(width: 8),
           IconButton(
             onPressed: _refreshList,
             tooltip: 'Yenile',
-            style: IconButton.styleFrom(
-              backgroundColor: colorScheme.surfaceContainerLow,
-              fixedSize: const Size(40, 40),
-            ),
-            icon: Icon(
-              Icons.refresh_rounded,
-              size: 20,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            icon: const Icon(Icons.refresh_rounded),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
         ],
       ),
       body: FutureBuilder<List<Person>>(
         future: _personsFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          // Yalnızca ilk yüklemede tam ekran yükleme göstergesi gösterilir
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -196,20 +189,15 @@ class _PersonListScreenState extends State<PersonListScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Arama çubuğu
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                 child: TextField(
                   controller: _searchController,
-                  textAlignVertical: TextAlignVertical.center,
-                  style: textTheme.bodyLarge,
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
                     hintText: 'Kişi veya departman ara...',
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.close_rounded, size: 20),
@@ -219,11 +207,6 @@ class _PersonListScreenState extends State<PersonListScreen> {
                             },
                           )
                         : null,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
-                    ),
-                    fillColor: colorScheme.surfaceContainerLow,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -232,16 +215,10 @@ class _PersonListScreenState extends State<PersonListScreen> {
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide(
-                        color: colorScheme.primary,
-                        width: 1.5,
-                      ),
-                    ),
                   ),
                 ),
               ),
+              // Departman filtre çipleri
               SizedBox(
                 height: 40,
                 child: ListView.separated(
@@ -259,14 +236,9 @@ class _PersonListScreenState extends State<PersonListScreen> {
                       showCheckmark: false,
                       shape: const StadiumBorder(),
                       side: BorderSide.none,
-                      backgroundColor: colorScheme.surfaceContainerLow,
+                      backgroundColor: Colors.white,
                       selectedColor: colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
                       labelStyle: TextStyle(
-                        fontSize: 13.5,
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected
@@ -281,6 +253,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+              // Dinamik Kişi Listesi (ListView)
               Expanded(
                 child: filteredPersons.isEmpty
                     ? Center(
@@ -290,7 +263,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: () async => _refreshList(),
+                        onRefresh: _refreshList,
                         child: ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
                           itemCount: filteredPersons.length,
@@ -311,14 +284,16 @@ class _PersonListScreenState extends State<PersonListScreen> {
           );
         },
       ),
+      // Sağ alt köşede sabit + simgeli Floating Action Button (FAB)
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreateScreen,
         tooltip: 'Yeni Kişi Ekle',
-        child: const Icon(Icons.add_rounded, size: 26),
+        child: const Icon(Icons.add_rounded, size: 28),
       ),
     );
   }
 
+  /// Satır/Kart Elemanı: Solda dairesel profil fotoğrafı, yanında kalın Ad-Soyad ve altında Departman bilgisi.
   Widget _buildPersonCard(
     ColorScheme colorScheme,
     TextTheme textTheme,
@@ -346,35 +321,32 @@ class _PersonListScreenState extends State<PersonListScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Kalın yazı tipiyle Ad-Soyad
                     Text(
                       person.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.titleMedium,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 3),
+                    // Altında Departman bilgisi (Canlı müdahalede person.phone vb. ile değiştirilebilir)
                     Text(
                       person.department,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodyMedium,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.chevron_right_rounded,
-                  size: 18,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -390,23 +362,15 @@ class _PersonListScreenState extends State<PersonListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.people_outline_rounded,
-                size: 36,
-                color: colorScheme.primary,
-              ),
+            Icon(
+              Icons.people_outline_rounded,
+              size: 56,
+              color: colorScheme.primary,
             ),
             const SizedBox(height: 16),
             Text(
               'Kayıtlı kişi bulunamadı',
-              style: textTheme.titleLarge,
+              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Text(
@@ -434,23 +398,17 @@ class _PersonListScreenState extends State<PersonListScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: colorScheme.errorContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.cloud_off_rounded,
-                    size: 32,
-                    color: colorScheme.error,
-                  ),
+                Icon(
+                  Icons.cloud_off_rounded,
+                  size: 48,
+                  color: colorScheme.error,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Sunucuya Bağlanılamadı',
-                  style: textTheme.titleLarge,
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(

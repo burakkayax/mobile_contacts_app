@@ -2,6 +2,10 @@ from django.db import models
 
 
 class Person(models.Model):
+    """
+    Kişi Yönetim Sistemi veritabanı modeli (SQLite).
+    Alanlar serializer katmanında yönergedeki camelCase JSON şemasına dönüştürülür.
+    """
     full_name = models.CharField(max_length=150)
     department = models.CharField(max_length=150)
     photo_url = models.CharField(max_length=500, blank=True, default='')

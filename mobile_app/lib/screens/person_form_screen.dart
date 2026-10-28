@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/person.dart';
 import '../services/api_service.dart';
+import '../widgets/person_avatar.dart';
 
+/// Yeni Kişi Kayıt (POST /api/persons) ve Kişi Güncelleme (PUT /api/persons/{id}) Form Ekranı.
 class PersonFormScreen extends StatefulWidget {
   final Person? person;
 
@@ -54,6 +56,7 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     super.dispose();
   }
 
+  /// Takvim seçici (DatePicker) ile doğum tarihini YYYY-MM-DD formatında seçtirir.
   Future<void> _pickBirthDate() async {
     final parsed = DateTime.tryParse(_birthDateController.text.trim());
     final initialDate = parsed ?? DateTime(1995, 1, 1);
@@ -75,6 +78,7 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     }
   }
 
+  /// Form doğrulamasını kontrol eder; düzenleme modundaysa PUT, yeni kayıtsa POST isteği gönderir.
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -147,12 +151,26 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Canlı Profil Fotoğrafı Önizlemesi
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: PersonAvatar(
+                    photoUrl: _photoUrlController.text,
+                    fullName: _fullNameController.text.isEmpty
+                        ? '?'
+                        : _fullNameController.text,
+                    radius: 38,
+                  ),
+                ),
+              ),
               _buildTextField(
                 textTheme: textTheme,
                 controller: _fullNameController,
                 label: 'Ad Soyad',
                 hint: 'Örn: Ahmet Yılmaz',
                 icon: Icons.person_outline_rounded,
+                onChanged: (_) => setState(() {}),
                 validator: (val) => val == null || val.trim().isEmpty
                     ? 'Ad Soyad zorunludur'
                     : null,
@@ -209,7 +227,8 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
                   if (val == null || val.trim().isEmpty) {
                     return 'E-posta zorunludur';
                   }
-                  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(val.trim())) {
+                  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                      .hasMatch(val.trim())) {
                     return 'Geçerli bir e-posta giriniz';
                   }
                   return null;
@@ -235,6 +254,8 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
                 hint: 'https://randomuser.me/api/portraits/men/32.jpg',
                 icon: Icons.image_outlined,
                 keyboardType: TextInputType.url,
+                textInputAction: TextInputAction.done,
+                onChanged: (_) => setState(() {}),
               ),
             ],
           ),
@@ -279,11 +300,15 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
+    TextInputAction textInputAction = TextInputAction.next,
+    ValueChanged<String>? onChanged,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onChanged: onChanged,
       style: textTheme.bodyLarge,
       validator: validator,
       decoration: InputDecoration(
