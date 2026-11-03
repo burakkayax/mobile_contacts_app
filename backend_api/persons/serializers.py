@@ -9,7 +9,6 @@ class PersonSerializer(serializers.ModelSerializer):
         source='photo_url',
         allow_blank=True,
         required=False,
-        default='https://randomuser.me/api/portraits/lego/1.jpg',
     )
     birthPlace = serializers.CharField(source='birth_place')
     birthDate = serializers.DateField(source='birth_date')

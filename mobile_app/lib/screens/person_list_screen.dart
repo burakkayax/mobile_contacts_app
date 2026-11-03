@@ -38,8 +38,9 @@ class _PersonListScreenState extends State<PersonListScreen> {
         actions: [
           IconButton(
             onPressed: _refreshList,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: FutureBuilder<List<Person>>(
@@ -57,52 +58,89 @@ class _PersonListScreenState extends State<PersonListScreen> {
             return const Center(child: Text('Kayıtlı kişi bulunamadı.'));
           }
 
-          // Dinamik Liste (ListView)
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: persons.length,
-            itemBuilder: (context, index) {
-              final person = persons[index];
-              final hasPhoto = person.photoUrl.isNotEmpty;
+          // Aşağı çekerek yenilenebilir Dinamik Liste (ListView)
+          return RefreshIndicator(
+            onRefresh: () async => _refreshList(),
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+              itemCount: persons.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final person = persons[index];
+                final hasPhoto = person.photoUrl.isNotEmpty;
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  // Solda dairesel profil fotoğrafı (ağ resmi)
-                  leading: CircleAvatar(
-                    radius: 24,
-                    backgroundImage:
-                        hasPhoto ? NetworkImage(person.photoUrl) : null,
-                    onBackgroundImageError: hasPhoto ? (_, _) {} : null,
-                    child: hasPhoto ? null : const Icon(Icons.person),
-                  ),
-                  // Kalın yazı tipiyle Ad-Soyad
-                  title: Text(
-                    person.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  // Altında Departman bilgisi (Canlı müdahalede person.phone yapılabilir)
-                  subtitle: Text(person.department),
-                  trailing: const Icon(Icons.chevron_right),
-                  // Satıra tıklandığında seçilen kişinin ID'si ile Detay Sayfası açılır
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PersonDetailScreen(personId: person.id!),
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    // Solda dairesel profil fotoğrafı (boşsa baş harf)
+                    leading: CircleAvatar(
+                      radius: 26,
+                      backgroundColor: const Color(0xFFEFF6FF),
+                      backgroundImage:
+                          hasPhoto ? NetworkImage(person.photoUrl) : null,
+                      onBackgroundImageError: hasPhoto ? (_, _) {} : null,
+                      child: hasPhoto
+                          ? null
+                          : Text(
+                              person.fullName[0].toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                    ),
+                    // Kalın yazı tipiyle Ad-Soyad
+                    title: Text(
+                      person.fullName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
                       ),
-                    );
-                    _refreshList();
-                  },
-                ),
-              );
-            },
+                    ),
+                    // Altında Departman bilgisi (Canlı müdahalede person.phone yapılabilir)
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        person.department,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    // Satıra tıklandığında seçilen kişinin ID'si ile Detay Sayfası açılır
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PersonDetailScreen(personId: person.id!),
+                        ),
+                      );
+                      _refreshList();
+                    },
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
       // Sağ alt köşede sabit + simgeli Floating Action Button (FAB)
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        shape: const CircleBorder(),
         onPressed: () async {
           await Navigator.push(
             context,
@@ -112,7 +150,7 @@ class _PersonListScreenState extends State<PersonListScreen> {
           );
           _refreshList();
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

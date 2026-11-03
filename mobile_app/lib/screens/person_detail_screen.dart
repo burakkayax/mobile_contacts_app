@@ -37,7 +37,12 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Kişiyi Sil'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Kişiyi Sil',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         content: Text(
           '${person.fullName} isimli kişiyi silmek istediğinize emin misiniz?',
         ),
@@ -49,7 +54,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           // Silme onayı butonu (Canlı müdahalede backgroundColor rengi değiştirilebilir)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              minimumSize: const Size(88, 42),
+              backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(context, true),
@@ -82,15 +88,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           // En Altta Sabit Aksiyon Butonları: DÜZENLE ve KİŞİYİ SİL
           bottomNavigationBar: person == null
               ? null
-              : SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+              : Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: SafeArea(
                     child: Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                             ),
                             onPressed: () async {
@@ -103,7 +110,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                               );
                               _loadPerson();
                             },
-                            icon: const Icon(Icons.edit),
+                            icon: const Icon(Icons.edit_outlined, size: 19),
                             label: const Text('DÜZENLE'),
                           ),
                         ),
@@ -111,11 +118,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: const Color(0xFFDC2626),
                               foregroundColor: Colors.white,
                             ),
                             onPressed: () => _confirmAndDelete(person),
-                            icon: const Icon(Icons.delete),
+                            icon: const Icon(Icons.delete_outline, size: 19),
                             label: const Text('KİŞİYİ SİL'),
                           ),
                         ),
@@ -142,55 +149,96 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Üstte büyük profil fotoğrafı, merkezde Ad-Soyad ve Departman unvanı
-          CircleAvatar(
-            radius: 48,
-            backgroundImage: hasPhoto ? NetworkImage(person.photoUrl) : null,
-            onBackgroundImageError: hasPhoto ? (_, _) {} : null,
-            child: hasPhoto ? null : const Icon(Icons.person, size: 48),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            person.fullName,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            person.department,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-
-          // Alt panelde kartlar/satırlar halinde detaylar ve iletişim aksiyonları
+          // Üst Panel: Büyük profil fotoğrafı, merkezde Ad-Soyad ve Departman unvanı
           Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 46,
+                    backgroundColor: const Color(0xFFEFF6FF),
+                    backgroundImage:
+                        hasPhoto ? NetworkImage(person.photoUrl) : null,
+                    onBackgroundImageError: hasPhoto ? (_, _) {} : null,
+                    child: hasPhoto
+                        ? null
+                        : Text(
+                            person.fullName[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    person.fullName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      person.department,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Alt Panel: Kartlar/satırlar halinde detaylar ve iletişim aksiyonları
+          Card(
+            clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.location_on),
-                  title: const Text('Doğum Yeri'),
-                  subtitle: Text(person.birthPlace),
+                _buildDetailRow(
+                  icon: Icons.location_on_outlined,
+                  label: 'Doğum Yeri',
+                  value: person.birthPlace,
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.cake),
-                  title: const Text('Doğum Tarihi'),
-                  subtitle: Text(person.birthDate),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildDetailRow(
+                  icon: Icons.cake_outlined,
+                  label: 'Doğum Tarihi',
+                  value: person.birthDate,
                 ),
-                const Divider(height: 1),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
                 // Tıklanabilir E-posta satırı -> mailto: niyetini tetikler
-                ListTile(
-                  leading: const Icon(Icons.email, color: Colors.blue),
-                  title: const Text('E-Posta'),
-                  subtitle: Text(person.email),
+                _buildDetailRow(
+                  icon: Icons.email_outlined,
+                  label: 'E-Posta',
+                  value: person.email,
                   onTap: () => launchUrl(Uri.parse('mailto:${person.email}')),
                 ),
-                const Divider(height: 1),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
                 // Tıklanabilir Telefon satırı -> tel: niyetini tetikler
-                ListTile(
-                  leading: const Icon(Icons.phone, color: Colors.blue),
-                  title: const Text('Telefon'),
-                  subtitle: Text(person.phone),
+                _buildDetailRow(
+                  icon: Icons.phone_outlined,
+                  label: 'Telefon',
+                  value: person.phone,
                   onTap: () => launchUrl(Uri.parse('tel:${person.phone}')),
                 ),
               ],
@@ -198,6 +246,49 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    VoidCallback? onTap,
+  }) {
+    final isClickable = onTap != null;
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(
+        icon,
+        color: isClickable ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+      ),
+      title: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
+        ),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color:
+                isClickable ? const Color(0xFF2563EB) : const Color(0xFF0F172A),
+          ),
+        ),
+      ),
+      trailing: isClickable
+          ? const Icon(
+              Icons.open_in_new_rounded,
+              size: 18,
+              color: Color(0xFF2563EB),
+            )
+          : null,
     );
   }
 }

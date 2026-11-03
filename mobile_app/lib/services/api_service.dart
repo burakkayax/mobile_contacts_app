@@ -1,17 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/person.dart';
 
 /// Backend REST API (/api/persons) ile asenkron HTTP haberleşmesini yöneten sınıf.
 class ApiService {
   // Android emülatörde bilgisayarın localhost'una 10.0.2.2 ile erişilir.
-  static String get baseUrl {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000/api/persons';
-    }
-    return 'http://127.0.0.1:8000/api/persons';
-  }
+  static const String baseUrl = 'http://10.0.2.2:8000/api/persons';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json; charset=UTF-8',

@@ -33,8 +33,7 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     _fullNameController = TextEditingController(text: p?.fullName ?? '');
     _departmentController = TextEditingController(text: p?.department ?? '');
     _birthPlaceController = TextEditingController(text: p?.birthPlace ?? '');
-    _birthDateController =
-        TextEditingController(text: p?.birthDate ?? '1995-01-01');
+    _birthDateController = TextEditingController(text: p?.birthDate ?? '');
     _emailController = TextEditingController(text: p?.email ?? '');
     _phoneController = TextEditingController(text: p?.phone ?? '');
     _photoUrlController = TextEditingController(text: p?.photoUrl ?? '');
@@ -97,28 +96,52 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              _buildTextField(_fullNameController, 'Ad Soyad'),
-              _buildTextField(_departmentController, 'Departman'),
-              _buildTextField(_birthPlaceController, 'Doğum Yeri'),
-              _buildTextField(_birthDateController, 'Doğum Tarihi (YYYY-AA-GG)'),
-              _buildTextField(_emailController, 'E-Posta'),
-              _buildTextField(_phoneController, 'Telefon'),
+              _buildTextField(
+                _fullNameController,
+                'Ad Soyad',
+                Icons.person_outline,
+              ),
+              _buildTextField(
+                _departmentController,
+                'Departman',
+                Icons.work_outline,
+              ),
+              _buildTextField(
+                _birthPlaceController,
+                'Doğum Yeri',
+                Icons.location_on_outlined,
+              ),
+              _buildTextField(
+                _birthDateController,
+                'Doğum Tarihi (YYYY-AA-GG)',
+                Icons.cake_outlined,
+              ),
+              _buildTextField(
+                _emailController,
+                'E-Posta',
+                Icons.email_outlined,
+              ),
+              _buildTextField(
+                _phoneController,
+                'Telefon',
+                Icons.phone_outlined,
+              ),
               _buildTextField(
                 _photoUrlController,
                 'Fotoğraf URL (İsteğe Bağlı)',
+                Icons.image_outlined,
                 isRequired: false,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
-                height: 48,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
                   ),
                   onPressed: _savePerson,
-                  child: Text(isEditing ? 'GÜNCELLE' : 'KAYDET'),
+                  child: Text(isEditing ? 'DEĞİŞİKLİKLERİ KAYDET' : 'KAYDET'),
                 ),
               ),
             ],
@@ -130,16 +153,17 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
 
   Widget _buildTextField(
     TextEditingController controller,
-    String label, {
+    String label,
+    IconData icon, {
     bool isRequired = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(icon, size: 20, color: const Color(0xFF64748B)),
         ),
         validator: (value) {
           if (isRequired && (value == null || value.trim().isEmpty)) {
