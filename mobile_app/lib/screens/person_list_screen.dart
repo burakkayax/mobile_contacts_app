@@ -82,7 +82,6 @@ class _PersonListScreenState extends State<PersonListScreen> {
                       backgroundColor: const Color(0xFFEFF6FF),
                       backgroundImage:
                           hasPhoto ? NetworkImage(person.photoUrl) : null,
-                      onBackgroundImageError: hasPhoto ? (_, _) {} : null,
                       child: hasPhoto
                           ? null
                           : Text(

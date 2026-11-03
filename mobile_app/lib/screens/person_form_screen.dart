@@ -16,40 +16,15 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService();
 
-  late final TextEditingController _fullNameController;
-  late final TextEditingController _departmentController;
-  late final TextEditingController _birthPlaceController;
-  late final TextEditingController _birthDateController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
-  late final TextEditingController _photoUrlController;
+  late final _fullNameCtrl = TextEditingController(text: widget.person?.fullName);
+  late final _deptCtrl = TextEditingController(text: widget.person?.department);
+  late final _placeCtrl = TextEditingController(text: widget.person?.birthPlace);
+  late final _dateCtrl = TextEditingController(text: widget.person?.birthDate);
+  late final _emailCtrl = TextEditingController(text: widget.person?.email);
+  late final _phoneCtrl = TextEditingController(text: widget.person?.phone);
+  late final _photoCtrl = TextEditingController(text: widget.person?.photoUrl);
 
   bool get isEditing => widget.person != null;
-
-  @override
-  void initState() {
-    super.initState();
-    final p = widget.person;
-    _fullNameController = TextEditingController(text: p?.fullName ?? '');
-    _departmentController = TextEditingController(text: p?.department ?? '');
-    _birthPlaceController = TextEditingController(text: p?.birthPlace ?? '');
-    _birthDateController = TextEditingController(text: p?.birthDate ?? '');
-    _emailController = TextEditingController(text: p?.email ?? '');
-    _phoneController = TextEditingController(text: p?.phone ?? '');
-    _photoUrlController = TextEditingController(text: p?.photoUrl ?? '');
-  }
-
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _departmentController.dispose();
-    _birthPlaceController.dispose();
-    _birthDateController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _photoUrlController.dispose();
-    super.dispose();
-  }
 
   // Form verilerini doğrular; düzenleme modundaysa PUT, yeni kayıtsa POST gönderir
   Future<void> _savePerson() async {
@@ -57,13 +32,13 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
 
     final personData = Person(
       id: widget.person?.id,
-      fullName: _fullNameController.text.trim(),
-      department: _departmentController.text.trim(),
-      birthPlace: _birthPlaceController.text.trim(),
-      birthDate: _birthDateController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      photoUrl: _photoUrlController.text.trim(),
+      fullName: _fullNameCtrl.text.trim(),
+      department: _deptCtrl.text.trim(),
+      birthPlace: _placeCtrl.text.trim(),
+      birthDate: _dateCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim(),
+      photoUrl: _photoCtrl.text.trim(),
     );
 
     try {
@@ -96,38 +71,14 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
           key: _formKey,
           child: Column(
             children: [
+              _buildTextField(_fullNameCtrl, 'Ad Soyad', Icons.person_outline),
+              _buildTextField(_deptCtrl, 'Departman', Icons.work_outline),
+              _buildTextField(_placeCtrl, 'Doğum Yeri', Icons.location_on_outlined),
+              _buildTextField(_dateCtrl, 'Doğum Tarihi (YYYY-AA-GG)', Icons.cake_outlined),
+              _buildTextField(_emailCtrl, 'E-Posta', Icons.email_outlined),
+              _buildTextField(_phoneCtrl, 'Telefon', Icons.phone_outlined),
               _buildTextField(
-                _fullNameController,
-                'Ad Soyad',
-                Icons.person_outline,
-              ),
-              _buildTextField(
-                _departmentController,
-                'Departman',
-                Icons.work_outline,
-              ),
-              _buildTextField(
-                _birthPlaceController,
-                'Doğum Yeri',
-                Icons.location_on_outlined,
-              ),
-              _buildTextField(
-                _birthDateController,
-                'Doğum Tarihi (YYYY-AA-GG)',
-                Icons.cake_outlined,
-              ),
-              _buildTextField(
-                _emailController,
-                'E-Posta',
-                Icons.email_outlined,
-              ),
-              _buildTextField(
-                _phoneController,
-                'Telefon',
-                Icons.phone_outlined,
-              ),
-              _buildTextField(
-                _photoUrlController,
+                _photoCtrl,
                 'Fotoğraf URL (İsteğe Bağlı)',
                 Icons.image_outlined,
                 isRequired: false,
