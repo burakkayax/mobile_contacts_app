@@ -4,8 +4,8 @@ import '../models/person.dart';
 
 /// Backend REST API (/api/persons) ile asenkron HTTP haberleşmesini yöneten sınıf.
 class ApiService {
-  // Android emülatörde bilgisayarın localhost'una 10.0.2.2 ile erişilir.
-  static const String baseUrl = 'http://10.0.2.2:8000/api/persons';
+  // Android emülatörde varsayılan 10.0.2.2 kullanılır; fiziksel cihazda değiştirilebilir.
+  static String baseUrl = 'http://10.0.2.2:8000/api/persons';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json; charset=UTF-8',

@@ -30,12 +30,47 @@ class _PersonListScreenState extends State<PersonListScreen> {
     });
   }
 
+  // Fiziksel telefonda test ederken sunucu IP adresini değiştirmeyi sağlar
+  void _editApiUrl() {
+    final ctrl = TextEditingController(text: ApiService.baseUrl);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sunucu Adresi'),
+        content: TextField(controller: ctrl),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(88, 42),
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              ApiService.baseUrl = ctrl.text.trim();
+              Navigator.pop(context);
+              _refreshList();
+            },
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rehber / Kişi Listesi'),
         actions: [
+          IconButton(
+            onPressed: _editApiUrl,
+            icon: const Icon(Icons.settings_outlined),
+          ),
           IconButton(
             onPressed: _refreshList,
             icon: const Icon(Icons.refresh_rounded),
