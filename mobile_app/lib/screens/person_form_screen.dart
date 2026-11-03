@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/person.dart';
 import '../services/api_service.dart';
-import '../widgets/person_avatar.dart';
 
-/// Yeni Kişi Kayıt (POST /api/persons) ve Kişi Güncelleme (PUT /api/persons/{id}) Form Ekranı.
+/// Yeni Kişi Kayıt (POST /api/persons) ve Güncelleme (PUT /api/persons/{id}) Ekranı.
 class PersonFormScreen extends StatefulWidget {
   final Person? person;
 
   const PersonFormScreen({super.key, this.person});
-
-  bool get isEditing => person != null;
 
   @override
   State<PersonFormScreen> createState() => _PersonFormScreenState();
@@ -21,13 +18,13 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
 
   late final TextEditingController _fullNameController;
   late final TextEditingController _departmentController;
-  late final TextEditingController _photoUrlController;
   late final TextEditingController _birthPlaceController;
   late final TextEditingController _birthDateController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _photoUrlController;
 
-  bool _isSubmitting = false;
+  bool get isEditing => widget.person != null;
 
   @override
   void initState() {
@@ -35,286 +32,121 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     final p = widget.person;
     _fullNameController = TextEditingController(text: p?.fullName ?? '');
     _departmentController = TextEditingController(text: p?.department ?? '');
-    _photoUrlController = TextEditingController(text: p?.photoUrl ?? '');
     _birthPlaceController = TextEditingController(text: p?.birthPlace ?? '');
-    _birthDateController = TextEditingController(
-      text: p?.birthDate ?? '1995-01-01',
-    );
+    _birthDateController =
+        TextEditingController(text: p?.birthDate ?? '1995-01-01');
     _emailController = TextEditingController(text: p?.email ?? '');
     _phoneController = TextEditingController(text: p?.phone ?? '');
+    _photoUrlController = TextEditingController(text: p?.photoUrl ?? '');
   }
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _departmentController.dispose();
-    _photoUrlController.dispose();
     _birthPlaceController.dispose();
     _birthDateController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _photoUrlController.dispose();
     super.dispose();
   }
 
-  /// Takvim seçici (DatePicker) ile doğum tarihini YYYY-MM-DD formatında seçtirir.
-  Future<void> _pickBirthDate() async {
-    final parsed = DateTime.tryParse(_birthDateController.text.trim());
-    final initialDate = parsed ?? DateTime(1995, 1, 1);
-
-    final selected = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(1940),
-      lastDate: DateTime.now(),
-    );
-
-    if (selected != null) {
-      final year = selected.year.toString().padLeft(4, '0');
-      final month = selected.month.toString().padLeft(2, '0');
-      final day = selected.day.toString().padLeft(2, '0');
-      setState(() {
-        _birthDateController.text = '$year-$month-$day';
-      });
-    }
-  }
-
-  /// Form doğrulamasını kontrol eder; düzenleme modundaysa PUT, yeni kayıtsa POST isteği gönderir.
-  Future<void> _submitForm() async {
+  // Form verilerini doğrular; düzenleme modundaysa PUT, yeni kayıtsa POST gönderir
+  Future<void> _savePerson() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    final payload = Person(
+    final personData = Person(
       id: widget.person?.id,
       fullName: _fullNameController.text.trim(),
       department: _departmentController.text.trim(),
-      photoUrl: _photoUrlController.text.trim(),
       birthPlace: _birthPlaceController.text.trim(),
       birthDate: _birthDateController.text.trim(),
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
+      photoUrl: _photoUrlController.text.trim(),
     );
 
     try {
-      if (widget.isEditing) {
-        final updated = await _apiService.updatePerson(
-          widget.person!.id!,
-          payload,
-        );
-        if (!mounted) return;
-        Navigator.pop(context, updated);
+      if (isEditing) {
+        await _apiService.updatePerson(widget.person!.id!, personData);
       } else {
-        final created = await _apiService.createPerson(payload);
-        if (!mounted) return;
-        Navigator.pop(context, created);
+        await _apiService.createPerson(personData);
+      }
+      if (mounted) {
+        Navigator.pop(context);
       }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('İşlem başarısız: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    } finally {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 4,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.isEditing ? 'Kişi Bilgilerini Düzenle' : 'Yeni Kişi Kaydı',
-        ),
+        title: Text(isEditing ? 'Kişiyi Düzenle' : 'Yeni Kişi Ekle'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Canlı Profil Fotoğrafı Önizlemesi
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: PersonAvatar(
-                    photoUrl: _photoUrlController.text,
-                    fullName: _fullNameController.text.isEmpty
-                        ? '?'
-                        : _fullNameController.text,
-                    radius: 38,
+              _buildTextField(_fullNameController, 'Ad Soyad'),
+              _buildTextField(_departmentController, 'Departman'),
+              _buildTextField(_birthPlaceController, 'Doğum Yeri'),
+              _buildTextField(_birthDateController, 'Doğum Tarihi (YYYY-AA-GG)'),
+              _buildTextField(_emailController, 'E-Posta'),
+              _buildTextField(_phoneController, 'Telefon'),
+              _buildTextField(
+                _photoUrlController,
+                'Fotoğraf URL (İsteğe Bağlı)',
+                isRequired: false,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
                   ),
+                  onPressed: _savePerson,
+                  child: Text(isEditing ? 'GÜNCELLE' : 'KAYDET'),
                 ),
-              ),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _fullNameController,
-                label: 'Ad Soyad',
-                hint: 'Örn: Ahmet Yılmaz',
-                icon: Icons.person_outline_rounded,
-                onChanged: (_) => setState(() {}),
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Ad Soyad zorunludur'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _departmentController,
-                label: 'Departman / Unvan',
-                hint: 'Örn: Yazılım Geliştirme',
-                icon: Icons.work_outline_rounded,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Departman zorunludur'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _birthPlaceController,
-                label: 'Doğum Yeri',
-                hint: 'Örn: Adana',
-                icon: Icons.location_on_outlined,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Doğum yeri zorunludur'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _birthDateController,
-                readOnly: true,
-                style: textTheme.bodyLarge,
-                onTap: _pickBirthDate,
-                decoration: InputDecoration(
-                  labelText: 'Doğum Tarihi (YYYY-AA-GG)',
-                  prefixIcon: const Icon(Icons.cake_outlined, size: 20),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today_rounded, size: 20),
-                    onPressed: _pickBirthDate,
-                  ),
-                ),
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Doğum tarihi zorunludur'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _emailController,
-                label: 'E-Posta Adresi',
-                hint: 'Örn: ahmet.yilmaz@sirket.com',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'E-posta zorunludur';
-                  }
-                  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                      .hasMatch(val.trim())) {
-                    return 'Geçerli bir e-posta giriniz';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _phoneController,
-                label: 'Telefon Numarası',
-                hint: 'Örn: +905550123456',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Telefon numarası zorunludur'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              _buildTextField(
-                textTheme: textTheme,
-                controller: _photoUrlController,
-                label: 'Profil Fotoğrafı URL (İsteğe Bağlı)',
-                hint: 'https://randomuser.me/api/portraits/men/32.jpg',
-                icon: Icons.image_outlined,
-                keyboardType: TextInputType.url,
-                textInputAction: TextInputAction.done,
-                onChanged: (_) => setState(() {}),
               ),
             ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: SizedBox(
-            height: 52,
-            child: FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submitForm,
-              icon: _isSubmitting
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colorScheme.onPrimary,
-                      ),
-                    )
-                  : Icon(
-                      widget.isEditing
-                          ? Icons.check_rounded
-                          : Icons.person_add_alt_1_rounded,
-                      size: 20,
-                    ),
-              label: Text(
-                widget.isEditing ? 'DEĞİŞİKLİKLERİ KAYDET' : 'KİŞİYİ KAYDET',
-              ),
-            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextTheme textTheme,
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    TextInputAction textInputAction = TextInputAction.next,
-    ValueChanged<String>? onChanged,
-    String? Function(String?)? validator,
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    bool isRequired = true,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      onChanged: onChanged,
-      style: textTheme.bodyLarge,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 20),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) {
+          if (isRequired && (value == null || value.trim().isEmpty)) {
+            return '$label alanı zorunludur';
+          }
+          return null;
+        },
       ),
     );
   }

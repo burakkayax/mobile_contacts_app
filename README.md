@@ -12,7 +12,7 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
 .
 ├── backend_api/               # Django REST Framework Sunucu Katmanı (Python + SQLite)
 │   ├── config/                # Django proje ayarları, CORS ve ana URL yönlendirmeleri
-│   ├── persons/               # Person modeli, Serializer, APIView uç noktaları ve testler
+│   ├── persons/               # Person modeli, Serializer ve APIView uç noktaları
 │   ├── manage.py              # Django yönetim betiği
 │   └── requirements.txt       # Python bağımlılık listesi
 │
@@ -23,12 +23,10 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
 │   │   │   └── person.dart    # JSON <-> Dart veri modeli (fromJson / toJson)
 │   │   ├── services/
 │   │   │   └── api_service.dart # Asenkron HTTP istekleri (GET, POST, PUT, DELETE)
-│   │   ├── screens/
-│   │   │   ├── person_list_screen.dart   # 1. Kişi Listesi (Ana Sayfa + FAB)
-│   │   │   ├── person_detail_screen.dart # 2. Kişi Detay Sayfası (Intent + Düzenle/Sil)
-│   │   │   └── person_form_screen.dart   # Yeni Kişi Kayıt ve Güncelleme Formu
-│   │   └── widgets/
-│   │       └── person_avatar.dart        # Dairesel ağ profil fotoğrafı bileşeni
+│   │   └── screens/
+│   │       ├── person_list_screen.dart   # 1. Kişi Listesi (Ana Sayfa + FAB)
+│   │       ├── person_detail_screen.dart # 2. Kişi Detay Sayfası (Intent + Düzenle/Sil)
+│   │       └── person_form_screen.dart   # Yeni Kişi Kayıt ve Güncelleme Formu
 │   └── pubspec.yaml           # Flutter paket bağımlılıkları (http, url_launcher)
 │
 └── README.md                  # Kurulum, çalıştırma ve test kılavuzu
@@ -73,12 +71,7 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
    ```bash
    python manage.py runserver 0.0.0.0:8000
    ```
-   > **Not:** `0.0.0.0:8000` parametresi sayesinde hem yerel makineden (`http://127.0.0.1:8000`), hem Android Emülatörden (`http://10.0.2.2:8000`), hem de aynı Wi-Fi ağındaki fiziksel cihazlardan erişim sağlanır.
-
-6. Backend birim testlerini çalıştırmak için:
-   ```bash
-   python manage.py test persons
-   ```
+   > **Not:** `0.0.0.0:8000` parametresi sayesinde hem yerel makineden (`http://127.0.0.1:8000`) hem de Android Emülatörden (`http://10.0.2.2:8000`) erişim sağlanır.
 
 ---
 
@@ -131,10 +124,9 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
    flutter run
    ```
 
-### Sunucu Bağlantı Adresi Yapılandırması
+### Sunucu Bağlantı Adresi Yapılandırması (`lib/services/api_service.dart`)
 - **Android Emülatör:** Otomatik olarak `http://10.0.2.2:8000/api/persons` adresini kullanır.
 - **Masaüstü / iOS Simülatör / Web:** Otomatik olarak `http://127.0.0.1:8000/api/persons` adresini kullanır.
-- **Fiziksel Cihaz:** Uygulama üst çubuğundaki (AppBar) ağ ayarları ikonuna tıklayarak bilgisayarınızın yerel IP adresini (örn. `http://192.168.1.50:8000/api/persons`) çalışma zamanında girebilirsiniz.
 
 ### Çalıştırılabilir APK Test Paketi ve Derleme Komutu
 - **Hazır Derlenmiş APK Dosyası:** [`mobile_app/release/kisi_yonetim_sistemi.apk`](mobile_app/release/kisi_yonetim_sistemi.apk) (Doğrudan Android cihaza yüklenebilir).
@@ -143,4 +135,3 @@ Bu proje, **Flutter (Dart)** tabanlı mobil istemci (`/mobile_app`) ile **Django
 cd mobile_app
 flutter build apk --release --split-per-abi
 ```
-Derlenen mimari bazlı optimize APK dosyaları `mobile_app/build/app/outputs/flutter-apk/` dizininde (`app-arm64-v8a-release.apk`, `app-x86_64-release.apk`) oluşturulur.

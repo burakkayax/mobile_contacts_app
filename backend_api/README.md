@@ -66,10 +66,3 @@ Sunucu varsayılan olarak `http://127.0.0.1:8000` (Android Emülatör için `htt
   "phone": "+905550123456"
 }
 ```
-
-## 4. Testleri Çalıştırma
-
-API uç noktalarının birim testlerini doğrulamak için:
-```bash
-python manage.py test persons
-```

@@ -1,8 +1,7 @@
-from django.urls import re_path
+from django.urls import path
 from .views import PersonListCreateAPIView, PersonDetailAPIView
 
-# Hem /api/persons hem de /api/persons/ şeklindeki istekleri kabul eder
 urlpatterns = [
-    re_path(r'^persons/?$', PersonListCreateAPIView.as_view(), name='person-list-create'),
-    re_path(r'^persons/(?P<pk>\d+)/?$', PersonDetailAPIView.as_view(), name='person-detail'),
+    path('persons', PersonListCreateAPIView.as_view()),
+    path('persons/<int:pk>', PersonDetailAPIView.as_view()),
 ]

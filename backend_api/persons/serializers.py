@@ -1,27 +1,18 @@
-from urllib.parse import quote
 from rest_framework import serializers
 from .models import Person
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    """
-    Modeldeki snake_case alanları yönergedeki camelCase JSON şemasına bağlar:
-    fullName, department, photoUrl, birthPlace, birthDate (YYYY-MM-DD), email, phone
-    """
-    fullName = serializers.CharField(source='full_name', max_length=150)
+    """Modeldeki snake_case alanları yönergedeki camelCase JSON şemasına bağlar."""
+    fullName = serializers.CharField(source='full_name')
     photoUrl = serializers.CharField(
         source='photo_url',
-        max_length=500,
         allow_blank=True,
         required=False,
-        default='',
+        default='https://randomuser.me/api/portraits/lego/1.jpg',
     )
-    birthPlace = serializers.CharField(source='birth_place', max_length=100)
-    birthDate = serializers.DateField(
-        source='birth_date',
-        format='%Y-%m-%d',
-        input_formats=['%Y-%m-%d', 'iso-8601'],
-    )
+    birthPlace = serializers.CharField(source='birth_place')
+    birthDate = serializers.DateField(source='birth_date')
 
     class Meta:
         model = Person
@@ -35,14 +26,3 @@ class PersonSerializer(serializers.ModelSerializer):
             'email',
             'phone',
         ]
-
-    def validate(self, attrs):
-        # Fotoğraf URL boş bırakılırsa kişinin baş harflerinden otomatik avatar URL üretilir
-        photo_url = attrs.get('photo_url', '').strip()
-        full_name = attrs.get('full_name') or getattr(self.instance, 'full_name', 'Person')
-        if not photo_url or 'ui-avatars.com/api/' in photo_url:
-            encoded_name = quote(full_name)
-            attrs['photo_url'] = (
-                f"https://ui-avatars.com/api/?name={encoded_name}&background=1E88E5&color=fff&size=256"
-            )
-        return attrs

@@ -7,17 +7,13 @@ from .serializers import PersonSerializer
 
 
 class PersonListCreateAPIView(APIView):
-    """
-    /api/persons uç noktası:
-    - GET: Tüm kişileri JSON dizi (array) formatında listeler.
-    - POST: Yeni kişi kaydı oluşturur.
-    """
-
+    # GET /api/persons -> Tüm kişileri dizi (array) formatında listeler
     def get(self, request):
         persons = Person.objects.all()
         serializer = PersonSerializer(persons, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
+    # POST /api/persons -> Yeni kişi kaydı oluşturur
     def post(self, request):
         serializer = PersonSerializer(data=request.data)
         if serializer.is_valid():
@@ -27,34 +23,22 @@ class PersonListCreateAPIView(APIView):
 
 
 class PersonDetailAPIView(APIView):
-    """
-    /api/persons/{id} uç noktası:
-    - GET: Belirtilen ID'ye sahip kişinin tüm detaylarını döner.
-    - PUT / PATCH: Kişinin iletişim ve unvan bilgilerini günceller.
-    - DELETE: İlgili kaydı veritabanından kalıcı olarak siler.
-    """
-
+    # GET /api/persons/{id} -> Belirtilen ID'ye sahip kişinin detaylarını döner
     def get(self, request, pk):
         person = get_object_or_404(Person, pk=pk)
         serializer = PersonSerializer(person)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
+    # PUT /api/persons/{id} -> Kişinin bilgilerini günceller
     def put(self, request, pk):
         person = get_object_or_404(Person, pk=pk)
         serializer = PersonSerializer(person, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, pk):
-        person = get_object_or_404(Person, pk=pk)
-        serializer = PersonSerializer(person, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    # DELETE /api/persons/{id} -> İlgili kaydı veritabanından kalıcı olarak siler
     def delete(self, request, pk):
         person = get_object_or_404(Person, pk=pk)
         person.delete()
